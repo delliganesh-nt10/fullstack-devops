@@ -1,0 +1,17 @@
+# Terraform
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Python env
+*.venv/
+
+# Node modules
+node_modules/
+
+# SSH keys
+*.pem
+/tmp/privkey
