@@ -76,8 +76,8 @@ jobs:
     # Run Ansible playbook for deployment
     - name: Deploy Using Ansible
       env:
-        EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
-        DB_NAME: ${{ secrets.DB_NAME }}
-        DB_USER: ${{ secrets.DB_USER }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      run: ansible-playbook -i ansible/inventory/hosts ansible/playbook.yml
+       EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
+       DB_NAME: ${{ secrets.DB_NAME }}
+       DB_USER: ${{ secrets.DB_USER }}
+       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: ansible-playbook -i "$EC2_PUBLIC_IP," ansible/playbook.yml
