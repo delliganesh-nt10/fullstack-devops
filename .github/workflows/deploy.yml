@@ -27,36 +27,26 @@ jobs:
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v2
       with:
-        terraform_version: 1.7.5
+        terraform_version: "1.7.5"
 
     # Terraform Init
     - name: Terraform Init
       working-directory: infra
       run: terraform init
 
+    # Terraform Validate
     - name: Terraform Validate
       working-directory: infra
       run: terraform validate
 
+    # Terraform Apply
     - name: Terraform Apply
       working-directory: infra
       run: terraform apply -auto-approve
 
-    # Install jq for extracting IP properly
+    # Install jq (optional but safe to have)
     - name: Install jq
       run: sudo apt-get install -y jq
-
-    # Capture EC2 public IP from Terraform output
-    - name: Get EC2 Public IP
-      working-directory: infra
-      run: |
-        echo "" > $GITHUB_ENV
-        IP=$(terraform output -raw public_ip | tr -d '\r' | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-        echo EC2_PUBLIC_IP=$IP >> $GITHUB_ENV
-
-    # Debug to confirm IP is loaded
-    - name: Debug IP Value
-      run: echo "Using EC2_PUBLIC_IP = $EC2_PUBLIC_IP"
 
     # Prepare SSH Private Key for Ansible
     - name: Prepare SSH Private Key
@@ -74,11 +64,12 @@ jobs:
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
         sudo apt install -y nodejs
 
-    # Run Ansible playbook for deployment
+    # Run Ansible playbook using Terraform output directly as inventory
     - name: Deploy Using Ansible
       env:
-       EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
-       DB_NAME: ${{ secrets.DB_NAME }}
-       DB_USER: ${{ secrets.DB_USER }}
-       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      run: ansible-playbook -i "$EC2_PUBLIC_IP," ansible/playbook.yml
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        IP=$(terraform -chdir=infra output -raw public_ip)
+        ansible-playbook -i "$IP," ansible/playbook.yml --private-key /tmp/privkey -u ubuntu
