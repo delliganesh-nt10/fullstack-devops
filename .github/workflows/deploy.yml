@@ -65,11 +65,13 @@ jobs:
         sudo apt install -y nodejs
 
     # Run Ansible playbook using Terraform IP output
+ # Run Ansible playbook using Terraform state output directly
     - name: Deploy Using Ansible
       env:
-        DB_NAME: ${{ secrets.DB_NAME }}
-        DB_USER: ${{ secrets.DB_USER }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+       DB_NAME: ${{ secrets.DB_NAME }}
+       DB_USER: ${{ secrets.DB_USER }}
+       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
-        IP=$(terraform -chdir=infra output -raw public_ip | tr -d '\n')
+        IP=$(cat infra/terraform.tfstate | jq -r '.outputs.public_ip.value')
         ansible-playbook -i "${IP}," ansible/playbook.yml --private-key /tmp/privkey -u ubuntu
+
