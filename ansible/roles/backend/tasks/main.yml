@@ -1,0 +1,27 @@
+---
+- name: Copy backend source code
+  copy:
+    src: ../../backend/
+    dest: /opt/backend/
+    owner: ubuntu
+    group: ubuntu
+    mode: preserve
+
+- name: Create Python virtual environment
+  command: python3 -m venv /opt/backend/.venv
+
+- name: Install backend dependencies
+  pip:
+    requirements: /opt/backend/requirements.txt
+    virtualenv: /opt/backend/.venv
+
+- name: Deploy systemd service for FastAPI
+  template:
+    src: ats.service.j2
+    dest: /etc/systemd/system/ats.service
+
+- name: Enable and start backend service
+  systemd:
+    name: ats.service
+    state: started
+    enabled: yes

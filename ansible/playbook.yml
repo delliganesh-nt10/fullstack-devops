@@ -1,0 +1,16 @@
+---
+- name: Deploy ATS Application
+  hosts: ats
+  become: yes
+  vars:
+    backend_dir: /opt/backend
+    frontend_dir: /opt/frontend
+    db_name: "{{ lookup('env', 'DB_NAME') }}"
+    db_user: "{{ lookup('env', 'DB_USER') }}"
+    db_password: "{{ lookup('env', 'DB_PASSWORD') }}"
+  roles:
+    - common
+    - postgres
+    - backend
+    - frontend
+    - nginx
