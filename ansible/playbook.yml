@@ -1,6 +1,6 @@
 ---
 - name: Deploy ATS Application
-  hosts: ats
+  hosts: all
   become: yes
   vars:
     backend_dir: /opt/backend
