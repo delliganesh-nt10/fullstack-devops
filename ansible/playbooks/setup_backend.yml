@@ -1,5 +1,0 @@
-- hosts: backend
-  vars:
-    backend_code_path: ../backend
-  roles:
-    - role: backend
