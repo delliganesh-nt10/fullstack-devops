@@ -42,18 +42,24 @@ jobs:
       working-directory: infra
       run: terraform apply -auto-approve
 
-    # Capture EC2 public IP from Terraform output
+    # Install jq for extracting IP properly
     - name: Install jq
       run: sudo apt-get install -y jq
 
+    # Capture EC2 public IP from Terraform output
     - name: Get EC2 Public IP
+      id: getip
       working-directory: infra
       run: |
-            IP=$(terraform output -raw public_ip | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-            echo "EC2_PUBLIC_IP=$IP" >> $GITHUB_ENV
+        IP=$(terraform output -raw public_ip | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+        echo "EC2_PUBLIC_IP=$IP" >> $GITHUB_ENV
+        echo "Public IP detected: $IP"
 
+    # Debug to confirm IP is loaded
+    - name: Debug IP Value
+      run: echo "Using EC2_PUBLIC_IP = $EC2_PUBLIC_IP"
 
-    # Prepare SSH Private Key
+    # Prepare SSH Private Key for Ansible
     - name: Prepare SSH Private Key
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/privkey
@@ -69,7 +75,7 @@ jobs:
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
         sudo apt install -y nodejs
 
-    # Run Ansible playbook
+    # Run Ansible playbook for deployment
     - name: Deploy Using Ansible
       env:
         EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
