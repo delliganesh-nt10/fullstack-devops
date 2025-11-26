@@ -45,7 +45,10 @@ jobs:
     # Capture EC2 public IP from Terraform output
     - name: Get EC2 Public IP
       working-directory: infra
-      run: echo "EC2_PUBLIC_IP=$(terraform output -raw public_ip)" >> $GITHUB_ENV
+      run: | 
+            IP=$(terraform output -raw public_ip)
+            echo "EC2_PUBLIC_IP=$IP" >> $GITHUB_ENV
+  
 
     # Prepare SSH Private Key
     - name: Prepare SSH Private Key
