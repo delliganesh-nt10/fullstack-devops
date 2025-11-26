@@ -23,7 +23,13 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    # Terraform execution
+    # Install Terraform CLI
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.7.5
+
+    # Terraform Init
     - name: Terraform Init
       working-directory: infra
       run: terraform init
@@ -41,17 +47,23 @@ jobs:
       working-directory: infra
       run: echo "EC2_PUBLIC_IP=$(terraform output -raw public_ip)" >> $GITHUB_ENV
 
-    # Setup SSH key for Ansible to connect to EC2
+    # Prepare SSH Private Key
     - name: Prepare SSH Private Key
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/privkey
         chmod 600 /tmp/privkey
 
-    # Install Ansible on runner
+    # Install Ansible
     - name: Install Ansible
       run: sudo apt update && sudo apt install -y ansible
 
-    # Run Ansible Playbook
+    # Install Node.js (required for frontend build)
+    - name: Install NodeJS
+      run: |
+        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+        sudo apt install -y nodejs
+
+    # Run Ansible playbook
     - name: Deploy Using Ansible
       env:
         EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
