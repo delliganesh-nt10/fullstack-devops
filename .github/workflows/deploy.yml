@@ -43,11 +43,15 @@ jobs:
       run: terraform apply -auto-approve
 
     # Capture EC2 public IP from Terraform output
+    - name: Install jq
+      run: sudo apt-get install -y jq
+
     - name: Get EC2 Public IP
       working-directory: infra
-      run: | 
-            IP=$(terraform output -raw public_ip)
-            echo "EC2_PUBLIC_IP=$IP" >> $GITHUB_ENV
+      run: |
+        IP=$(terraform output -json public_ip | jq -r .)
+        echo "EC2_PUBLIC_IP=$IP" >> $GITHUB_ENV
+
   
 
     # Prepare SSH Private Key
