@@ -1,0 +1,53 @@
+name: Terraform Deploy
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # ⭐ WRITE SSH KEYS (missing in your workflow)
+      - name: Write SSH keys
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > /tmp/deploy_key.pub
+          chmod 644 /tmp/deploy_key.pub
+
+      - name: Terraform init & apply
+        working-directory: terraform
+        run: |
+          terraform init -input=false
+          terraform apply -auto-approve -input=false \
+            -var="ami=${{ secrets.AMI_ID }}" \
+            -var="public_key_path=/tmp/deploy_key.pub" \
+            -var="instance_type=t3.micro" \
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
+            -var="tfstate_bucket=${{ secrets.TFSTATE_BUCKET }}" \
+            -var="tfstate_lock_table=${{ secrets.TFSTATE_LOCK_TABLE }}"
+
+      - name: Save outputs
+        working-directory: terraform
+        run: terraform output -json > ../terraform-outputs.json
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-outputs
+          path: terraform-outputs.json
