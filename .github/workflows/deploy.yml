@@ -44,7 +44,7 @@ jobs:
       working-directory: infra
       run: terraform apply -auto-approve
 
-    # Install jq (optional but safe to have)
+    # Install jq (optional)
     - name: Install jq
       run: sudo apt-get install -y jq
 
@@ -58,19 +58,18 @@ jobs:
     - name: Install Ansible
       run: sudo apt update && sudo apt install -y ansible
 
-    # Install Node.js (required for frontend build)
+    # Install Node.js (for frontend build)
     - name: Install NodeJS
       run: |
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
         sudo apt install -y nodejs
 
-    # Run Ansible playbook using Terraform output directly as inventory
+    # Run Ansible playbook using Terraform IP output
     - name: Deploy Using Ansible
       env:
-       DB_NAME: ${{ secrets.DB_NAME }}
-       DB_USER: ${{ secrets.DB_USER }}
-       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
-       IP=$(terraform -chdir=infra output -raw public_ip | tr -d '\n' | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-       ansible-playbook -i "${IP}," ansible/playbook.yml --private-key /tmp/privkey -u ubuntu
-
+        IP=$(terraform -chdir=infra output -raw public_ip | tr -d '\n')
+        ansible-playbook -i "${IP}," ansible/playbook.yml --private-key /tmp/privkey -u ubuntu
