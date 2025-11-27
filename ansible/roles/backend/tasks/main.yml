@@ -1,11 +1,11 @@
 ---
 - name: Copy backend source code
   copy:
-    src: ../../backend/
+    src: "{{ playbook_dir }}/../backend/"
     dest: /opt/backend/
     owner: ubuntu
     group: ubuntu
-    mode: preserve
+    mode: '0755'
 
 - name: Create Python virtual environment
   command: python3 -m venv /opt/backend/.venv
