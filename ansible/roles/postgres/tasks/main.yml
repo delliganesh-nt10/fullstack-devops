@@ -3,6 +3,7 @@
   apt:
     name: postgresql
     state: present
+    update_cache: yes
 
 - name: Ensure PostgreSQL service is running
   service:
@@ -10,14 +11,27 @@
     state: started
     enabled: yes
 
+# Create database as postgres user
 - name: Create ATS database
+  become: yes
   become_user: postgres
-  postgresql_db:
+  community.postgresql.postgresql_db:
     name: "{{ db_name }}"
 
-- name: Create ATS database user
+# Create DB user
+- name: Create ATS DB user
+  become: yes
   become_user: postgres
-  postgresql_user:
+  community.postgresql.postgresql_user:
     name: "{{ db_user }}"
     password: "{{ db_password }}"
-    priv: "ALL"
+
+# Grant privileges to user on DB
+- name: Grant privileges on ATS database
+  become: yes
+  become_user: postgres
+  community.postgresql.postgresql_privs:
+    db: "{{ db_name }}"
+    role: "{{ db_user }}"
+    type: database
+    privs: ALL
