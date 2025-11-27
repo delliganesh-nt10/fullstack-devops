@@ -11,14 +11,12 @@
     state: started
     enabled: yes
 
-# Create database as postgres user
 - name: Create ATS database
   become: yes
   become_user: postgres
   community.postgresql.postgresql_db:
     name: "{{ db_name }}"
 
-# Create DB user
 - name: Create ATS DB user
   become: yes
   become_user: postgres
@@ -26,7 +24,6 @@
     name: "{{ db_user }}"
     password: "{{ db_password }}"
 
-# Grant privileges to user on DB
 - name: Grant privileges on ATS database
   become: yes
   become_user: postgres
