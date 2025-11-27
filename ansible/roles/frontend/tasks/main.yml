@@ -1,11 +1,11 @@
 ---
 - name: Copy frontend source code
   copy:
-    src: ../../frontend/
+    src: "{{ playbook_dir }}/../frontend/"
     dest: /opt/frontend/
     owner: ubuntu
     group: ubuntu
-    mode: preserve
+    mode: '0755'
 
 - name: Install Node.js and npm
   apt:
