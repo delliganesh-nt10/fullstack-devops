@@ -10,7 +10,14 @@
     name: postgresql
     state: started
     enabled: yes
-
+- name: Install PostgreSQL Python dependencies
+  apt:
+    name:
+      - python3-psycopg2
+      - postgresql-client
+    state: present
+    update_cache: yes
+    
 - name: Create ATS database
   become: yes
   become_user: postgres
