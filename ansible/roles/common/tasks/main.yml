@@ -1,4 +1,10 @@
 ---
+- name: Install ACL package required for privilege escalation
+  apt:
+    name: acl
+    state: present
+    update_cache: yes
+
 - name: Update apt cache
   apt:
     update_cache: yes
