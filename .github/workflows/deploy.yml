@@ -55,6 +55,10 @@ jobs:
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
         sudo apt install -y nodejs
 
+    # Clear Ansible cache to avoid using old role files
+    - name: Clear Ansible Cache
+      run: rm -rf ~/.ansible
+
     - name: Deploy Using Ansible
       env:
         DB_NAME: ${{ secrets.DB_NAME }}
