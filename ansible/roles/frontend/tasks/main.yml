@@ -8,35 +8,49 @@
     group: ubuntu
     mode: preserve
 
-# 1) Add NodeSource GPG key
-- name: Add NodeSource GPG key
+# Ensure curl exists
+- name: Install curl dependency
   become: yes
-  ansible.builtin.apt_key:
-    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-    state: present
-
-# 2) Add Node.js 18.x repository
-- name: Add Node.js 18.x repository
-  become: yes
-  ansible.builtin.apt_repository:
-    repo: "deb https://deb.nodesource.com/node_18.x nodistro main"
+  apt:
+    name: curl
     state: present
     update_cache: yes
 
-# 3) Install Node.js (includes npm)
+# Remove old Node.js if present
+- name: Remove old Node.js
+  become: yes
+  apt:
+    name: nodejs
+    state: absent
+
+# Add NodeSource Node.js 18.x repository
+- name: Add Node.js 18.x repo
+  become: yes
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+  args:
+    executable: /bin/bash
+
+# Install Node.js (includes npm)
 - name: Install Node.js and npm
   become: yes
-  ansible.builtin.apt:
+  apt:
     name: nodejs
     state: present
 
-# 4) Install frontend dependencies
+# Verify npm exists
+- name: Check npm binary
+  become: yes
+  command: which npm
+
+# Install frontend dependencies
 - name: Install frontend dependencies
   become: yes
-  npm:
-    path: /opt/frontend
+  command: npm install
+  args:
+    chdir: /opt/frontend
 
-# 5) Build frontend
+# Build frontend
 - name: Build frontend
   become: yes
   command: npm run build
