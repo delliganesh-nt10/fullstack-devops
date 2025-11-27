@@ -7,18 +7,36 @@
     group: ubuntu
     mode: '0755'
 
-- name: Install Node.js 18.x
-  shell: |
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    apt-get install -y nodejs
+# 1) Add GPG key for NodeSource
+- name: Add NodeSource GPG key
+  ansible.builtin.apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    state: present
+  become: yes
 
+# 2) Add Node.js 18.x repo
+- name: Add Node.js 18.x repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://deb.nodesource.com/node_18.x nodistro main"
+    state: present
+    update_cache: yes
+  become: yes
 
+# 3) Install Node.js
+- name: Install Node.js
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+  become: yes
+
+# 4) Install frontend dependencies
 - name: Install frontend dependencies
-  command: npm install
+  ansible.builtin.command: npm install
   args:
     chdir: /opt/frontend
 
+# 5) Build frontend
 - name: Build frontend
-  command: npm run build
+  ansible.builtin.command: npm run build
   args:
     chdir: /opt/frontend
