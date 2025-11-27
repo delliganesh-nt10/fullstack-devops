@@ -15,7 +15,6 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Configure AWS credentials for Terraform
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -23,56 +22,45 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    # Install Terraform CLI
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: "1.7.5"
 
-    # Terraform Init
     - name: Terraform Init
       working-directory: infra
       run: terraform init
 
-    # Terraform Validate
     - name: Terraform Validate
       working-directory: infra
       run: terraform validate
 
-    # Terraform Apply
     - name: Terraform Apply
       working-directory: infra
       run: terraform apply -auto-approve
 
-    # Install jq (optional)
     - name: Install jq
       run: sudo apt-get install -y jq
 
-    # Prepare SSH Private Key for Ansible
     - name: Prepare SSH Private Key
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/privkey
         chmod 600 /tmp/privkey
 
-    # Install Ansible
     - name: Install Ansible
       run: sudo apt update && sudo apt install -y ansible
 
-    # Install Node.js (for frontend build)
     - name: Install NodeJS
       run: |
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
         sudo apt install -y nodejs
 
-    # Run Ansible playbook using Terraform IP output
- # Run Ansible playbook using Terraform state output directly
     - name: Deploy Using Ansible
       env:
         DB_NAME: ${{ secrets.DB_NAME }}
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
-        IP=$(cat $GITHUB_WORKSPACE/infra/terraform.tfstate | jq -r '.outputs.public_ip.value')
+        IP=$(terraform -chdir=infra output -raw public_ip | tr -d '\n' | tr -d '\r')
+        echo "Deploying to $IP"
         ansible-playbook -i "${IP}," ansible/playbook.yml --private-key /tmp/privkey -u ubuntu
-
-
