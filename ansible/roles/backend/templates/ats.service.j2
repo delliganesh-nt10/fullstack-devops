@@ -5,10 +5,7 @@ After=network.target postgresql.service
 [Service]
 User=ubuntu
 WorkingDirectory=/opt/backend
-
-# Build DB_URL safely (password is URL-encoded to handle @ and other symbols)
-Environment="DB_URL=postgresql://{{ db_user }}:{{ db_password | urlencode }}@localhost:5432/{{ db_name }}"
-
+Environment="DB_URL=postgresql://ats_user:Ats%4012345@localhost:5432/ats_db"
 ExecStart=/opt/backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=always
 
