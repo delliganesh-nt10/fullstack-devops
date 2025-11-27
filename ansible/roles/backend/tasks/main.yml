@@ -21,7 +21,9 @@
     dest: /etc/systemd/system/ats.service
 
 - name: Enable and start backend service
+  become: yes
   systemd:
     name: ats.service
-    state: started
+    state: restarted
     enabled: yes
+    daemon_reload: yes

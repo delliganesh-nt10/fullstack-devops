@@ -62,10 +62,11 @@ jobs:
     - name: Clear Ansible Cache
       run: rm -rf ~/.ansible
 
-      
     - name: Deploy Using Ansible
       env:
-        DB_URL: postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@localhost:5432/${{ secrets.DB_NAME }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
         IP=$(terraform -chdir=infra output -raw public_ip | tr -d '\n' | tr -d '\r' | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
         echo "$IP" > inventory.ini
