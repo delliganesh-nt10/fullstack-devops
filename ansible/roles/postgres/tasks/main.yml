@@ -23,12 +23,3 @@
   community.postgresql.postgresql_user:
     name: "{{ db_user }}"
     password: "{{ db_password }}"
-
-- name: Grant privileges on ATS database
-  become: yes
-  become_user: postgres
-  community.postgresql.postgresql_privs:
-    db: "{{ db_name }}"
-    role: "{{ db_user }}"
-    type: database
-    privs: ALL
