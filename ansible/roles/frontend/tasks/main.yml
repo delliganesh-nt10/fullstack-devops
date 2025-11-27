@@ -1,4 +1,5 @@
 ---
+# 1) Copy frontend source code
 - name: Copy frontend source code
   become: yes
   copy:
@@ -8,7 +9,7 @@
     group: ubuntu
     mode: preserve
 
-# Ensure curl exists
+# 2) Ensure curl exists (required for NodeSource script)
 - name: Install curl dependency
   become: yes
   apt:
@@ -16,14 +17,18 @@
     state: present
     update_cache: yes
 
-# Remove old Node.js if present
-- name: Remove old Node.js
+# 3) Remove old Node.js and npm if they exist (avoids dpkg conflict)
+- name: Remove old Node.js and npm
   become: yes
   apt:
-    name: nodejs
+    name:
+      - nodejs
+      - npm
     state: absent
+    purge: yes
+  ignore_errors: yes
 
-# Add NodeSource Node.js 18.x repository
+# 4) Add NodeSource Node.js 18.x repository
 - name: Add Node.js 18.x repo
   become: yes
   shell: |
@@ -31,26 +36,27 @@
   args:
     executable: /bin/bash
 
-# Install Node.js (includes npm)
+# 5) Install Node.js (includes npm)
 - name: Install Node.js and npm
   become: yes
   apt:
     name: nodejs
     state: present
+    update_cache: yes
 
-# Verify npm exists
+# 6) Verify npm exists
 - name: Check npm binary
   become: yes
   command: which npm
 
-# Install frontend dependencies
+# 7) Install frontend dependencies (package.json now detected correctly)
 - name: Install frontend dependencies
   become: yes
   command: npm install
   args:
     chdir: /opt/frontend
 
-# Build frontend
+# 8) Build frontend for production
 - name: Build frontend
   become: yes
   command: npm run build
