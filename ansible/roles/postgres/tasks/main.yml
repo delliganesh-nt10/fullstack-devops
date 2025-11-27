@@ -14,12 +14,21 @@
 - name: Create ATS database
   become: yes
   become_user: postgres
-  community.postgresql.postgresql_db:
+  postgresql_db:
     name: "{{ db_name }}"
 
 - name: Create ATS DB user
   become: yes
   become_user: postgres
-  community.postgresql.postgresql_user:
+  postgresql_user:
     name: "{{ db_user }}"
     password: "{{ db_password }}"
+
+- name: Grant privileges on ATS database
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    db: "{{ db_name }}"
+    role: "{{ db_user }}"
+    type: database
+    privs: ALL
