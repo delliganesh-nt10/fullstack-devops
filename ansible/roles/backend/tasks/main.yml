@@ -19,6 +19,12 @@
   template:
     src: ats.service.j2
     dest: /etc/systemd/system/ats.service
+  become: yes
+
+# REQUIRED STEP — reload systemd so new DB_URL is detected
+- name: Reload systemd to apply updated service file
+  become: yes
+  command: systemctl daemon-reload
 
 - name: Enable and start backend service
   become: yes
@@ -26,4 +32,3 @@
     name: ats.service
     state: restarted
     enabled: yes
-    daemon_reload: yes
